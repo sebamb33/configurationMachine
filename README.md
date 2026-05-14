@@ -1,6 +1,6 @@
 # Configuration Machine — Sébastien
 
-Configuration complète du terminal — compatible **macOS** et **Debian/Ubuntu** : zsh, outils CLI, git et éditeurs.
+Configuration complète de machine — compatible **macOS** et **Debian/Ubuntu** : terminal zsh, outils CLI, git, et setup VPS sécurisé.
 
 ---
 
@@ -8,11 +8,14 @@ Configuration complète du terminal — compatible **macOS** et **Debian/Ubuntu*
 
 | Fichier | Description |
 |---------|-------------|
-| [`zsh-config.md`](./zsh-config.md) | `.zshrc`, `.zprofile`, `.zshenv` et guide de restauration |
+| [`zsh-config.md`](./zsh-config.md) | `.zshrc`, `.zprofile`, `.zshenv`, `.gitconfig` et guide de restauration (macOS + Debian) |
+| [`terminal-cheatsheet.md`](./terminal-cheatsheet.md) | Référence rapide de toutes les commandes et raccourcis |
+| [`setup-vps.sh`](./setup-vps.sh) | Script d'installation et de sécurisation d'un VPS Ubuntu/Debian |
+| [`vps-setup.md`](./vps-setup.md) | Documentation complète du setup VPS |
 
 ---
 
-## Outils configurés
+## Terminal & ZSH
 
 | Outil | Rôle |
 |-------|------|
@@ -27,32 +30,58 @@ Configuration complète du terminal — compatible **macOS** et **Debian/Ubuntu*
 | [atuin](https://github.com/atuinsh/atuin) | Historique shell avancé |
 | [ripgrep](https://github.com/BurntSushi/ripgrep) | `grep` ultra-rapide (`rg`) |
 
----
+### Installation rapide — Terminal
 
-## Installation rapide
-
-### macOS
-
+**macOS**
 ```bash
 brew install lazygit git-delta ripgrep fd fzf bat eza zoxide starship atuin
 ```
 
-### Debian / Ubuntu
-
+**Debian / Ubuntu**
 ```bash
 sudo apt install -y zsh git curl ripgrep fzf zoxide fd-find bat xclip
-# Voir zsh-config.md pour lazygit, eza, delta, starship et atuin (non disponibles dans apt)
+# Voir zsh-config.md pour lazygit, eza, delta, starship et atuin
 ```
 
-### Commun (oh-my-zsh + plugins)
-
+**oh-my-zsh + plugins (commun)**
 ```bash
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 ```
 
-Voir [`zsh-config.md`](./zsh-config.md) pour les instructions complètes et les différences par OS.
+---
+
+## VPS Sécurisé
+
+Stack installée par [`setup-vps.sh`](./setup-vps.sh) :
+
+| Outil | Rôle |
+|-------|------|
+| [UFW](https://wiki.ubuntu.com/UncomplicatedFirewall) | Firewall — ports 22/80/443/9090 uniquement |
+| [Fail2ban](https://www.fail2ban.org) | Blocage automatique des IPs malveillantes |
+| [Nginx](https://nginx.org) | Reverse proxy + security headers + rate limiting |
+| [Cockpit](https://cockpit-project.org) | Interface web d'administration (port 9090) |
+| [GoAccess](https://goaccess.io) | Stats de visites Nginx en temps réel |
+| [Netdata](https://www.netdata.cloud) | Monitoring CPU/RAM/réseau (localhost:19999) |
+| [Docker](https://www.docker.com) | Conteneurs |
+| [Uptime Kuma](https://github.com/louislam/uptime-kuma) | Monitoring de disponibilité (localhost:3001) |
+
+### Utilisation du script
+
+```bash
+# Interactif
+wget https://raw.githubusercontent.com/sebamb33/configurationMachine/main/setup-vps.sh
+chmod +x setup-vps.sh
+sudo ./setup-vps.sh
+
+# Silencieux (via variables d'environnement)
+sudo SSH_PORT=2222 ADMIN_USER=seb TIMEZONE=Europe/Paris DOMAIN=monsite.fr ./setup-vps.sh
+```
+
+Le script vérifie chaque outil avant de l'installer — il est **idempotent** (safe à relancer).
+
+Voir [`vps-setup.md`](./vps-setup.md) pour la documentation complète.
 
 ---
 
