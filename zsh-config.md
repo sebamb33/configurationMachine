@@ -1,57 +1,117 @@
-# Configuration ZSH — Machine de Sébastien
+# Configuration ZSH — macOS & Debian
 
 ## Fichiers de config
 
-| Fichier | Rôle |
-|---------|------|
-| `~/.zshrc` | Config principale du shell |
-| `~/.zprofile` | Variables d'environnement (PATH, Homebrew…) |
-| `~/.zshenv` | Variables chargées en premier (Flutter, Cargo) |
-| `~/.gitconfig` | Config git globale avec delta |
-| `~/.config/lazygit/config.yml` | Config lazygit (thème Catppuccin, delta) |
-| `~/.config/starship.toml` | Prompt starship |
+| Fichier | Emplacement | Rôle |
+|---------|-------------|------|
+| `.zshrc` | `~/.zshrc` | Config principale du shell |
+| `.zprofile` | `~/.zprofile` | Variables d'environnement au login |
+| `.zshenv` | `~/.zshenv` | Variables chargées en premier |
+| `.gitconfig` | `~/.gitconfig` | Config git globale avec delta |
+| `lazygit/config.yml` | `~/.config/lazygit/config.yml` | Config lazygit |
+| `starship.toml` | `~/.config/starship.toml` | Prompt starship |
 
 ---
 
-## Outils installés
+## Compatibilité OS
 
-| Outil | Install | Rôle |
-|-------|---------|------|
-| oh-my-zsh | `~/.oh-my-zsh` | Framework zsh |
-| lazygit | `brew install lazygit` | TUI git |
-| git-delta | `brew install git-delta` | Diff coloré |
-| ripgrep | `brew install ripgrep` | `grep` ultra-rapide (`rg`) |
-| fd | cargo | `find` rapide |
-| fzf | `brew install fzf` | Fuzzy finder |
-| bat | `brew install bat` | `cat` avec coloration |
-| eza | `brew install eza` | `ls` avec icônes et git |
-| zoxide | `brew install zoxide` | `cd` intelligent |
-| starship | `brew install starship` | Prompt rapide |
-| atuin | `brew install atuin` | Historique shell avancé |
+| Élément | macOS | Debian |
+|---------|-------|--------|
+| Détection | `IS_MAC=1` si `uname == Darwin` | non défini |
+| Homebrew | `/opt/homebrew` | `/home/linuxbrew/.linuxbrew` |
+| pnpm home | `~/Library/pnpm` | `~/.local/share/pnpm` |
+| dotnet | `/usr/local/share/dotnet` | `/usr/share/dotnet` |
+| clipboard | `pbcopy` | `xclip` ou `xsel` |
+| JetBrains Toolbox | `~/Library/Application Support/…` | `~/.local/share/JetBrains/…` |
+| git credential | `osxkeychain` | `libsecret` |
 
-### Installer tous les outils d'un coup
+---
+
+## Outils requis
+
+| Outil | macOS | Debian |
+|-------|-------|--------|
+| zsh | `brew install zsh` | `apt install zsh` |
+| oh-my-zsh | script curl | script curl |
+| lazygit | `brew install lazygit` | voir ci-dessous |
+| git-delta | `brew install git-delta` | `apt install git-delta` |
+| ripgrep | `brew install ripgrep` | `apt install ripgrep` |
+| fd | `brew install fd` | `apt install fd-find` + `ln -s $(which fdfind) ~/.local/bin/fd` |
+| fzf | `brew install fzf` | `apt install fzf` |
+| bat | `brew install bat` | `apt install bat` + `ln -s $(which batcat) ~/.local/bin/bat` |
+| eza | `brew install eza` | voir ci-dessous |
+| zoxide | `brew install zoxide` | `apt install zoxide` |
+| starship | `brew install starship` | script curl |
+| atuin | `brew install atuin` | script curl |
+| xclip | — | `apt install xclip` |
+
+### Installation macOS
 
 ```bash
-brew install lazygit git-delta ripgrep fzf bat eza zoxide starship atuin
+# Accepter la licence Xcode si nécessaire
+sudo xcodebuild -license accept
+
+brew install lazygit git-delta ripgrep fd fzf bat eza zoxide starship atuin
+```
+
+### Installation Debian / Ubuntu
+
+```bash
+sudo apt update && sudo apt install -y zsh git curl ripgrep fzf zoxide fd-find bat xclip
+
+# Aliases nécessaires (noms différents sur Debian)
+mkdir -p ~/.local/bin
+ln -sf $(which fdfind) ~/.local/bin/fd
+ln -sf $(which batcat) ~/.local/bin/bat
+
+# lazygit (pas dans apt)
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')
+curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+tar -C ~/.local/bin -xf /tmp/lazygit.tar.gz lazygit
+
+# eza (pas dans apt stable)
+sudo mkdir -p /etc/apt/keyrings
+wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+sudo apt update && sudo apt install -y eza
+
+# git-delta
+DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep '"tag_name"' | sed 's/.*"\(.*\)".*/\1/')
+curl -Lo /tmp/delta.deb "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/git-delta_${DELTA_VERSION}_amd64.deb"
+sudo dpkg -i /tmp/delta.deb
+
+# starship
+curl -sS https://starship.rs/install.sh | sh
+
+# atuin
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+
+# oh-my-zsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# Plugins oh-my-zsh
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+
+# Définir zsh comme shell par défaut
+chsh -s $(which zsh)
 ```
 
 ---
 
-## `.zshrc` complet
+## `.zshrc` complet (cross-platform)
 
 ```zsh
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
-# Set name of the theme to load.
 ZSH_THEME="robbyrussell"
 
-# Which plugins would you like to load?
 plugins=(git node npm)
 
 source $ZSH/oh-my-zsh.sh
 
-# Load custom plugins (ensure no duplicates with oh-my-zsh)
 if [[ -f ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
   source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 fi
@@ -63,8 +123,24 @@ fi
 # User configuration
 export EDITOR="vim"
 
+# OS detection
+[[ "$(uname)" == "Darwin" ]] && export IS_MAC=1
+
+# clipboard cross-platform
+if [[ -n "$IS_MAC" ]]; then
+  alias clip='pbcopy'
+elif command -v xclip &> /dev/null; then
+  alias clip='xclip -selection clipboard'
+elif command -v xsel &> /dev/null; then
+  alias clip='xsel --clipboard --input'
+fi
+
 # pnpm
-export PNPM_HOME="/Users/seb/Library/pnpm"
+if [[ -n "$IS_MAC" ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -89,7 +165,11 @@ if [[ -s "$HOME/.deno/env" ]]; then
 fi
 
 # dotnet
-export DOTNET_ROOT=/usr/local/share/dotnet
+if [[ -n "$IS_MAC" ]]; then
+  export DOTNET_ROOT=/usr/local/share/dotnet
+elif [[ -d /usr/share/dotnet ]]; then
+  export DOTNET_ROOT=/usr/share/dotnet
+fi
 
 # nvm
 export NVM_DIR="$HOME/.nvm"
@@ -147,7 +227,7 @@ if command -v fzf &> /dev/null; then
     --preview-window=right:60%:hidden
     --bind='ctrl-/:toggle-preview'
     --bind='ctrl-a:select-all'
-    --bind='ctrl-y:execute-silent(echo {+} | pbcopy)'"
+    --bind='ctrl-y:execute-silent(echo {+} | clip)'"
 fi
 
 # ── zoxide (remplace cd) ─────────────────────────────────────────────────────
@@ -232,7 +312,7 @@ port-kill() { lsof -ti :"$1" | xargs kill -9 2>/dev/null && echo "Port $1 libér
 
 ---
 
-## `.zprofile`
+## `.zprofile` — macOS
 
 ```zsh
 # Added by Toolbox App
@@ -244,6 +324,21 @@ export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
 
 # pipx
 export PATH="$PATH:/Users/seb/.local/bin"
+```
+
+## `.zprofile` — Debian
+
+```zsh
+# JetBrains Toolbox
+export PATH="$PATH:$HOME/.local/share/JetBrains/Toolbox/scripts"
+
+# Homebrew sur Linux (optionnel)
+if [[ -d /home/linuxbrew/.linuxbrew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
+# pipx / binaires locaux
+export PATH="$PATH:$HOME/.local/bin"
 ```
 
 ---
@@ -260,7 +355,28 @@ export PATH="$HOME/Documents/developement/flutter/bin:$PATH"
 
 ---
 
-## `.gitconfig`
+## `.gitconfig` — macOS
+
+```ini
+[credential]
+    helper = osxkeychain
+```
+
+## `.gitconfig` — Debian
+
+```ini
+[credential]
+    helper = libsecret
+```
+
+> Sur Debian, installer d'abord : `sudo apt install libsecret-1-0 libsecret-1-dev` puis compiler le helper :
+> ```bash
+> sudo make -C /usr/share/doc/git/contrib/credential/libsecret
+> ```
+
+---
+
+## `.gitconfig` commun
 
 ```ini
 [user]
@@ -296,28 +412,4 @@ export PATH="$HOME/Documents/developement/flutter/bin:$PATH"
     undo = reset HEAD~1 --mixed
     unstage = restore --staged
     aliases = config --get-regexp alias
-```
-
----
-
-## Restauration depuis zéro
-
-```bash
-# 1. Installer Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# 2. Installer oh-my-zsh
-sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-# 3. Installer les plugins oh-my-zsh
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-
-# 4. Installer les outils
-brew install lazygit git-delta ripgrep fzf bat eza zoxide starship atuin
-
-# 5. Copier les fichiers de config
-# ~/.zshrc, ~/.zprofile, ~/.zshenv, ~/.gitconfig
-# ~/.config/lazygit/config.yml
-# ~/.config/starship.toml
 ```

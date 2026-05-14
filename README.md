@@ -1,6 +1,6 @@
 # Configuration Machine — Sébastien
 
-Configuration complète du terminal macOS : zsh, outils CLI, git et éditeurs.
+Configuration complète du terminal — compatible **macOS** et **Debian/Ubuntu** : zsh, outils CLI, git et éditeurs.
 
 ---
 
@@ -31,22 +31,28 @@ Configuration complète du terminal macOS : zsh, outils CLI, git et éditeurs.
 
 ## Installation rapide
 
+### macOS
+
 ```bash
-# Homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# oh-my-zsh
-sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-# Plugins oh-my-zsh
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-
-# Outils CLI
-brew install lazygit git-delta ripgrep fzf bat eza zoxide starship atuin
+brew install lazygit git-delta ripgrep fd fzf bat eza zoxide starship atuin
 ```
 
-Ensuite copier les fichiers de config depuis ce repo vers leur emplacement respectif.
+### Debian / Ubuntu
+
+```bash
+sudo apt install -y zsh git curl ripgrep fzf zoxide fd-find bat xclip
+# Voir zsh-config.md pour lazygit, eza, delta, starship et atuin (non disponibles dans apt)
+```
+
+### Commun (oh-my-zsh + plugins)
+
+```bash
+sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+```
+
+Voir [`zsh-config.md`](./zsh-config.md) pour les instructions complètes et les différences par OS.
 
 ---
 
